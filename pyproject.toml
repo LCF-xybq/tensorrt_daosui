@@ -1,0 +1,14 @@
+[build-system]
+requires = ["scikit-build-core>=0.10", "pybind11>=2.12", "numpy"]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "tensorrt-daosui"
+version = "0.1.0"
+description = "TensorRT Rice Panicle Detection - YOLO inference on NVIDIA GPU"
+requires-python = ">=3.9"
+
+[tool.scikit-build]
+wheel.packages = ["python/tensorrt_daosui"]
+cmake.build-type = "Release"
+install.strip = true
