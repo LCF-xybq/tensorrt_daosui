@@ -13,6 +13,8 @@
 import os
 import glob
 import logging
+import time
+from contextlib import contextmanager
 from pathlib import Path
 
 import cv2
@@ -20,6 +22,9 @@ import numpy as np
 
 from tensorrt_daosui import WeedDetector
 from tensorrt_daosui.postprocess import Detection
+
+# 设为 1 时输出各步骤耗时
+DEBUG_TIME = 1
 
 logging.basicConfig(
     filename='processing.log',
@@ -29,6 +34,16 @@ logging.basicConfig(
     encoding='utf-8',
 )
 logger = logging.getLogger(__name__)
+
+
+@contextmanager
+def _timed(label: str):
+    if DEBUG_TIME:
+        t0 = time.perf_counter()
+        yield
+        logger.info(f"[计时] {label}: {time.perf_counter() - t0:.2f}s")
+    else:
+        yield
 
 # ================== 配置 ==================
 ENGINE_PATH = "daosui_v1.engine"
@@ -46,10 +61,6 @@ DEVICE_ID = 0
 BOX_COLOR = (0, 0, 255)
 BOX_THICKNESS = 2
 FONT = cv2.FONT_HERSHEY_SIMPLEX
-TITLE_SCALE = 0.8
-TITLE_THICKNESS = 2
-TITLE_MARGIN_TOP = 45
-TITLE_TEXT_Y = 32
 # ==========================================
 
 
@@ -71,17 +82,6 @@ def draw_detections(image: np.ndarray, detections: list[Detection]) -> np.ndarra
         cv2.rectangle(result, (x1, y1 - th - 8), (x1 + tw + 4, y1), BOX_COLOR, -1)
         cv2.putText(result, label, (x1 + 2, y1 - 4), FONT, 0.6, (255, 255, 255), 1)
     return result
-
-
-def add_title_band(image: np.ndarray, title: str) -> np.ndarray:
-    h, w = image.shape[:2]
-    band = np.ones((TITLE_MARGIN_TOP, w, 3), dtype=np.uint8) * 255
-    out = np.vstack([band, image])
-    cv2.putText(out, title, (15, TITLE_TEXT_Y), FONT, TITLE_SCALE,
-                (0, 0, 0), TITLE_THICKNESS + 1, cv2.LINE_AA)
-    cv2.putText(out, title, (15, TITLE_TEXT_Y), FONT, TITLE_SCALE,
-                (30, 30, 30), TITLE_THICKNESS, cv2.LINE_AA)
-    return out
 
 
 def process_single_image(model: WeedDetector, image_path: str, save_path: str) -> int:
@@ -174,20 +174,22 @@ def run_pipeline(
 
     logger.info(f"Found {len(image_paths)} images")
 
-    model = WeedDetector(
-        engine_path=engine_path,
-        device_id=DEVICE_ID,
-        model_w=MODEL_SIZE,
-        model_h=MODEL_SIZE,
-        max_batch_size=MAX_BATCH_SIZE,
-        yolo_version=YOLO_VERSION,
-        num_classes=NUM_CLASSES,
-        score_threshold=SCORE_THRESHOLD,
-        nms_threshold=NMS_THRESHOLD,
-    )
-    model.load()
+    with _timed("引擎加载"):
+        model = WeedDetector(
+            engine_path=engine_path,
+            device_id=DEVICE_ID,
+            model_w=MODEL_SIZE,
+            model_h=MODEL_SIZE,
+            max_batch_size=MAX_BATCH_SIZE,
+            yolo_version=YOLO_VERSION,
+            num_classes=NUM_CLASSES,
+            score_threshold=SCORE_THRESHOLD,
+            nms_threshold=NMS_THRESHOLD,
+        )
+        model.load()
 
-    total_dets = process_batch(model, image_paths, output_dir)
+    with _timed("推理(含IO)"):
+        total_dets = process_batch(model, image_paths, output_dir)
 
     model.unload()
 
