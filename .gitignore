@@ -277,3 +277,4 @@ kernel_meta/
 results/
 *.engine
 *.pt
+CLAUDE.md

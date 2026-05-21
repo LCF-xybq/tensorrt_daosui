@@ -181,13 +181,8 @@ private:
             // Batch preprocess all images on GPU (supports variable sizes)
             preprocessor_->preprocessBatch(imgs, nullptr);
 
-            // Single image elements (3*H*W)
-            int imageElements = 3 * model_h_ * model_w_;
-
-            // Run inference per image
-            for (int i = 0; i < batchSize; ++i) {
-                inference_->runSingle(inputBuffer, deviceOutput_, i, imageElements);
-            }
+            // Run batch inference (all images in one enqueueV3 call)
+            inference_->run(inputBuffer, deviceOutput_, batchSize);
 
             // Total output elements for all images
             auto outDims = inference_->getOutputDims();
