@@ -226,7 +226,7 @@ PYBIND11_MODULE(_tensorrt_daosui, m) {
 
     py::register_exception<WeedDetectorError>(m, "WeedDetectorError");
 
-    py::class_<WeedDetector>(m, "WeedDetector")
+    py::class_<WeedDetector>(m, "DaoSuiWeedDetector", py::module_local())
         .def(py::init<const std::string&, int, int, int, int, int, int, float, float>(),
              py::arg("engine_path"),
              py::arg("device_id") = 0,
