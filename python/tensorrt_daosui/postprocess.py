@@ -10,7 +10,7 @@ from dataclasses import dataclass
 
 try:
     from tensorrt_daosui._tensorrt_daosui import (
-        WeedDetector as _WeedDetector,
+        DaoSuiWeedDetector as _WeedDetector,
         WeedDetectorError,
     )
 except ImportError as e:
@@ -21,7 +21,7 @@ except ImportError as e:
 
 
 __all__ = [
-    "WeedDetector",
+    "DaoSuiWeedDetector",
     "WeedDetectorError",
     "Detection",
 ]
@@ -35,7 +35,7 @@ class Detection:
     batch_idx: int = 0
 
 
-class WeedDetector:
+class DaoSuiWeedDetector:
     """High-level rice panicle detection API using TensorRT.
 
     Handles variable-size input images via letterbox resize.
@@ -43,9 +43,9 @@ class WeedDetector:
 
     Usage::
 
-        from tensorrt_daosui import WeedDetector
+        from tensorrt_daosui import DaoSuiWeedDetector
 
-        det = WeedDetector("model.engine", device_id=0)
+        det = DaoSuiWeedDetector("model.engine", device_id=0)
         det.load()
 
         results = det.detect_image(image)

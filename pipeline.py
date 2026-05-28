@@ -24,7 +24,7 @@ from tensorrt_daosui import WeedDetector
 from tensorrt_daosui.postprocess import Detection
 
 # 设为 1 时输出各步骤耗时
-DEBUG_TIME = 1
+DEBUG_TIME = 0
 
 logging.basicConfig(
     filename='processing.log',

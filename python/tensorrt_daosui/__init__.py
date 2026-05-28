@@ -1,5 +1,5 @@
 """TensorRT Rice Panicle Detection - Python package."""
 
-from tensorrt_daosui.postprocess import WeedDetector, WeedDetectorError, Detection
+from tensorrt_daosui.postprocess import DaoSuiWeedDetector, WeedDetectorError, Detection
 
-__all__ = ["WeedDetector", "WeedDetectorError", "Detection"]
+__all__ = ["DaoSuiWeedDetector", "WeedDetectorError", "Detection"]
